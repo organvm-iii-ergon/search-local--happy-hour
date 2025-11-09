@@ -18,6 +18,7 @@ import {
   Columns
 } from '@phosphor-icons/react';
 import { DealType, PriceLevel, FilterState, DrinkingTheme } from '@/lib/types';
+import { THEME_COLOR_SCHEMES, THEME_ICONS } from '@/lib/theme-config';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface FilterPanelProps {
@@ -204,6 +205,9 @@ export function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
         <div className="space-y-2">
           {themeOptions.map((option, index) => {
             const isSelected = (filters.drinkingThemes || []).includes(option.theme);
+            const themeColors = THEME_COLOR_SCHEMES[option.theme];
+            const themeIcon = THEME_ICONS[option.theme];
+            
             return (
               <motion.div
                 key={option.theme}
@@ -217,20 +221,37 @@ export function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
                   variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => toggleTheme(option.theme)}
-                  className={`justify-start gap-3 w-full h-auto py-3 px-4 transition-all duration-300 ${
-                    isSelected 
-                      ? 'bg-gradient-to-r from-accent to-secondary text-accent-foreground shadow-lg' 
-                      : 'glass-morphic border-border/50 hover:border-accent/50'
+                  className={`justify-start gap-3 w-full h-auto py-3 px-4 transition-all duration-300 relative overflow-hidden ${
+                    !isSelected && 'glass-morphic border-border/50 hover:border-accent/50'
                   }`}
+                  style={isSelected ? {
+                    background: `linear-gradient(135deg, ${themeColors.primary}, ${themeColors.secondary})`,
+                    color: themeColors.textPrimary,
+                    borderColor: themeColors.borderColor,
+                  } : undefined}
                 >
+                  {isSelected && (
+                    <motion.div
+                      className="absolute inset-0 opacity-20"
+                      style={{ background: themeColors.accent }}
+                      animate={{
+                        opacity: [0.1, 0.3, 0.1],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  )}
                   <motion.div
                     animate={isSelected ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}}
                     transition={{ duration: 0.6 }}
-                    className="text-xl"
+                    className="text-2xl relative z-10"
                   >
-                    {option.icon}
+                    {themeIcon}
                   </motion.div>
-                  <div className="flex flex-col items-start">
+                  <div className="flex flex-col items-start relative z-10">
                     <span className="font-semibold text-sm">{option.label}</span>
                     <span className="text-xs opacity-80 font-normal">{option.description}</span>
                   </div>

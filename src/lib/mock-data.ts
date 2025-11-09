@@ -689,3 +689,245 @@ export const MOCK_VENUES: Venue[] = [
     ]
   }
 ];
+
+import { SocialThread, ThreadMessage, CalendarEvent } from './types';
+
+export const MOCK_SOCIAL_THREADS: SocialThread[] = [
+  {
+    id: 't1',
+    type: 'live',
+    title: 'Who\'s hitting The Golden Hour tonight?',
+    description: 'Marcus is doing a special tasting menu for happy hour. Let\'s get a group together!',
+    author: {
+      id: 'u1',
+      name: 'Alex Thompson',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
+      role: 'the-drinker'
+    },
+    venueId: '1',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    lastActivity: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+    participantCount: 8,
+    messageCount: 23,
+    tags: ['Golden Hour', 'Tonight', 'Group'],
+    isActive: true,
+    drinkingTheme: 'archetypal'
+  },
+  {
+    id: 't2',
+    type: 'live',
+    title: 'Hemingway Night - Who\'s in?',
+    description: 'Papa Morrison is hosting a Hemingway literary evening next week at Bourbon & Branch. Looking for fellow literature lovers!',
+    author: {
+      id: 'b4',
+      name: 'Ernest "Papa" Morrison',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
+      role: 'the-pourer'
+    },
+    venueId: '6',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+    lastActivity: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+    participantCount: 15,
+    messageCount: 47,
+    tags: ['Hemingway', 'Literary', 'Event Planning'],
+    isActive: true,
+    drinkingTheme: 'famous-drunks'
+  },
+  {
+    id: 't3',
+    type: 'offline',
+    title: 'Best Prohibition-Era Cocktails Discussion',
+    description: 'What\'s your favorite pre-prohibition cocktail? Let\'s share recipes and stories!',
+    author: {
+      id: 'u3',
+      name: 'Sarah Martinez',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80',
+      role: 'the-drinker'
+    },
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+    lastActivity: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+    participantCount: 22,
+    messageCount: 89,
+    tags: ['Prohibition', 'Recipes', 'Discussion'],
+    isActive: false,
+    drinkingTheme: 'prohibition'
+  },
+  {
+    id: 't4',
+    type: 'live',
+    title: 'Ancient Roman Wine Tasting - Tomorrow!',
+    description: 'Aurelius is hosting a Roman wine symposium tomorrow. We\'ll taste Falernian-style wines and learn about ancient drinking culture. Limited spots!',
+    author: {
+      id: 'b6',
+      name: 'Aurelius Vinifera',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80',
+      role: 'the-pourer'
+    },
+    venueId: '2',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    lastActivity: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    participantCount: 12,
+    messageCount: 31,
+    tags: ['Ancient Rome', 'Wine', 'Tasting'],
+    isActive: true,
+    drinkingTheme: 'ancient-rome'
+  },
+  {
+    id: 't5',
+    type: 'offline',
+    title: 'Literary Cocktails: From Page to Glass',
+    description: 'Discussing cocktails mentioned in classic literature. From James Bond\'s martini to Gatsby\'s champagne towers.',
+    author: {
+      id: 'b5',
+      name: 'Dorothy Parker-Mills',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+      role: 'the-pourer'
+    },
+    venueId: '6',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+    lastActivity: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
+    participantCount: 34,
+    messageCount: 127,
+    tags: ['Literary', 'Books', 'Cocktails'],
+    isActive: false,
+    drinkingTheme: 'literary'
+  }
+];
+
+export const MOCK_THREAD_MESSAGES: Record<string, ThreadMessage[]> = {
+  't1': [
+    {
+      id: 'msg1',
+      threadId: 't1',
+      userId: 'u1',
+      userName: 'Alex Thompson',
+      userAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
+      userRole: 'the-drinker',
+      content: 'Marcus mentioned he\'s doing a special yuzu cocktail tonight. Who wants to join?',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+      reactions: [{ emoji: '🍹', count: 5, users: ['u2', 'u3', 'u4', 'u5', 'u6'] }],
+    },
+    {
+      id: 'msg2',
+      threadId: 't1',
+      userId: 'u2',
+      userName: 'Emma Davis',
+      userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
+      userRole: 'the-drinker',
+      content: 'I\'m in! What time are we meeting?',
+      timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+      reactions: [{ emoji: '👍', count: 3, users: ['u1', 'u3', 'u4'] }],
+    },
+    {
+      id: 'msg3',
+      threadId: 't1',
+      userId: 'b1',
+      userName: 'Marcus Chen',
+      userAvatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&q=80',
+      userRole: 'the-pourer',
+      content: 'Looking forward to seeing you all! I\'ll have the special tasting menu ready by 6pm. 🥃',
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+      reactions: [{ emoji: '🔥', count: 8, users: ['u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8'] }],
+    }
+  ],
+  't2': [
+    {
+      id: 'msg4',
+      threadId: 't2',
+      userId: 'b4',
+      userName: 'Ernest "Papa" Morrison',
+      userAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
+      userRole: 'the-pourer',
+      content: 'Next Thursday at 7pm. We\'ll be reading passages from "A Moveable Feast" and I\'ll mix up proper Death in the Afternoon cocktails. Password at the door: "Fiesta".',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+      reactions: [{ emoji: '📚', count: 12, users: ['u1', 'u2', 'u3'] }],
+    }
+  ]
+};
+
+export const MOCK_CALENDAR_EVENTS: CalendarEvent[] = [
+  {
+    id: 'ce1',
+    title: 'Daily Happy Hour',
+    description: 'Classic happy hour with discounted drinks and appetizers',
+    venueId: '1',
+    venueName: 'The Golden Hour',
+    date: new Date().toISOString(),
+    startTime: '16:00',
+    endTime: '19:00',
+    type: 'happy-hour',
+    rsvpCount: 12,
+    price: '$5-8',
+    tags: ['Cocktails', 'Rooftop']
+  },
+  {
+    id: 'ce2',
+    title: 'Bacchanalia Revival',
+    description: 'An evening of ancient Roman revelry! Wine, mead, and mulled drinks.',
+    venueId: '2',
+    venueName: 'Brewmaster\'s Hideaway',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+    startTime: '19:00',
+    endTime: '23:00',
+    type: 'themed-event',
+    drinkingTheme: 'ancient-rome',
+    bartenderId: 'b6',
+    rsvpCount: 67,
+    maxCapacity: 80,
+    price: '$25',
+    image: 'https://images.unsplash.com/photo-1555669784-8e8f49564142?w=800&q=80',
+    tags: ['Ancient Rome', 'Wine', 'Mead']
+  },
+  {
+    id: 'ce3',
+    title: 'Hemingway\'s Paris: A Literary Evening',
+    description: 'Journey through 1920s Paris with Papa Morrison',
+    venueId: '6',
+    venueName: 'Bourbon & Branch',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
+    startTime: '19:00',
+    endTime: '22:00',
+    type: 'themed-event',
+    drinkingTheme: 'famous-drunks',
+    bartenderId: 'b4',
+    rsvpCount: 52,
+    maxCapacity: 60,
+    price: '$30',
+    image: 'https://images.unsplash.com/photo-1481833761820-0509d3217039?w=800&q=80',
+    tags: ['Hemingway', 'Literary', 'Readings']
+  },
+  {
+    id: 'ce4',
+    title: 'The Algonquin Round Table',
+    description: 'Dorothy Parker-Mills hosts an evening of wit and martinis',
+    venueId: '6',
+    venueName: 'Bourbon & Branch',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
+    startTime: '18:30',
+    endTime: '22:00',
+    type: 'themed-event',
+    drinkingTheme: 'literary',
+    bartenderId: 'b5',
+    rsvpCount: 41,
+    maxCapacity: 50,
+    price: '$25',
+    tags: ['Literary', 'Salon', 'Martinis']
+  },
+  {
+    id: 'ce5',
+    title: 'Speakeasy Saturday',
+    description: 'Step back to 1925. Password required at the door.',
+    venueId: '6',
+    venueName: 'Bourbon & Branch',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    startTime: '20:00',
+    endTime: '01:00',
+    type: 'themed-event',
+    drinkingTheme: 'prohibition',
+    rsvpCount: 78,
+    maxCapacity: 90,
+    price: '$20',
+    image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
+    tags: ['Prohibition', 'Speakeasy', 'Jazz']
+  }
+];

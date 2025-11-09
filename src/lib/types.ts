@@ -147,3 +147,88 @@ export interface FilterState {
   verified?: boolean;
   drinkingThemes?: DrinkingTheme[];
 }
+
+export interface SocialThread {
+  id: string;
+  type: 'live' | 'offline';
+  title: string;
+  description: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    role: UserRole;
+  };
+  venueId?: string;
+  createdAt: string;
+  lastActivity: string;
+  participantCount: number;
+  messageCount: number;
+  tags: string[];
+  isActive: boolean;
+  drinkingTheme?: DrinkingTheme;
+}
+
+export interface ThreadMessage {
+  id: string;
+  threadId: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userRole: UserRole;
+  content: string;
+  timestamp: string;
+  reactions: { emoji: string; count: number; users: string[] }[];
+  mentions?: string[];
+  images?: string[];
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description: string;
+  venueId: string;
+  venueName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  type: 'happy-hour' | 'themed-event' | 'live-music' | 'tasting' | 'special';
+  drinkingTheme?: DrinkingTheme;
+  bartenderId?: string;
+  rsvpCount: number;
+  maxCapacity?: number;
+  price?: string;
+  specialMenu?: MenuItem[];
+  image?: string;
+  tags: string[];
+}
+
+export interface DailyContent {
+  id: string;
+  date: string;
+  theme: DrinkingTheme;
+  quote: string;
+  quoteAuthor: string;
+  story: string;
+  cocktailOfTheDay: {
+    name: string;
+    recipe: string;
+    history: string;
+    image?: string;
+  };
+  historicalFact: string;
+  recommendedVenues: string[];
+  generatedAt: string;
+}
+
+export interface ThemeColorScheme {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  cardBg: string;
+  textPrimary: string;
+  textSecondary: string;
+  borderColor: string;
+  glowColor: string;
+}

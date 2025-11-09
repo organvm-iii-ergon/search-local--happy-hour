@@ -1,21 +1,67 @@
 # Planning Guide
 
-HappyHourAI is a social platform connecting bartenders and drink enthusiasts through curated happy hour experiences. Bartenders ("the-pourer") create and manage their venue profiles with custom menus and themed events, while customers ("the-drinker") discover, review, and connect with their favorite spots. **Enhanced with modern glassmorphism aesthetics, extensive animations, dynamic 3D interactions, and comprehensive social features.**
+Hello Happier Hour is a social platform connecting bartenders and drink enthusiasts through curated happy hour experiences with rich thematic contextualization. Bartenders ("the-pourer") create and manage their venue profiles with custom menus and themed events, while customers ("the-drinker") discover, review, and connect with their favorite spots. **Enhanced with modern glassmorphism aesthetics, extensive animations, dynamic 3D interactions, comprehensive social features, calendar integration, and daily generative content across five drinking culture themes.**
 
 **Experience Qualities**:
-1. **Connected** - The platform bridges bartenders and customers, fostering genuine relationships and community. Social features feel natural and encourage meaningful interactions.
-2. **Empowering** - Bartenders have complete control over their venue presence with professional tools. Customers discover personalized experiences and influence the scene through reviews and favorites.
-3. **Vibrant** - The experience captures the energy of nightlife culture with personality-driven profiles, themed events, and dynamic content that evolves with the community.
+1. **Connected** - The platform bridges bartenders and customers, fostering genuine relationships and community through live and offline social threads, event planning, and real-time conversations.
+2. **Empowering** - Bartenders have complete control over their venue presence with professional tools. Customers discover personalized experiences filtered by rich cultural themes and influence the scene through reviews and favorites.
+3. **Vibrant** - The experience captures the energy of nightlife culture with personality-driven profiles, themed events, thematically contextualized color schemes, and dynamic content that evolves daily with generative stories and cocktail recommendations.
 
-**Complexity Level**: Complex Application (advanced functionality, user accounts, social features)
+**Complexity Level**: Complex Application (advanced functionality, user accounts, social features, generative AI content)
   - Dual user role system (bartender/customer) with role-specific interfaces and permissions
   - Profile management with customization, media uploads, and personal branding
-  - Social interactions: reviews, ratings, comments, favorites, following
-  - Content creation: custom menus, themed events, special announcements
+  - Social interactions: reviews, ratings, comments, favorites, following, live threads, offline discussions
+  - Content creation: custom menus, themed events, special announcements, daily stories
   - Real-time updates and notifications for new deals and events
-  - **Enhanced UI/UX**: Advanced glassmorphism, 3D elements, comprehensive animations, floating decorations, real-time statistics
+  - Calendar integration with RSVP system and capacity tracking
+  - Five distinct thematic drinking cultures with unique color schemes and visual identities
+  - Daily generative content using AI: quotes, stories, cocktail recipes, historical facts
+  - **Enhanced UI/UX**: Advanced glassmorphism, 3D elements, comprehensive animations, floating decorations, real-time statistics, theme-specific visual treatments
 
 ## Essential Features
+
+### Thematic Drinking Cultures
+- **Functionality**: Five distinct cultural themes each with unique color schemes, visual treatments, and contextualized content
+- **Purpose**: Create immersive experiences that educate users about drinking history and culture while providing memorable aesthetic identities
+- **Trigger**: Filter selection, venue theme tags, daily content generation, event themes
+- **Progression**: Select theme → View themed color scheme → Browse themed venues/events → Read cultural context → Explore history
+- **Success criteria**: Users engage with multiple themes; theme selection increases venue discovery by 40%
+- **Themes**:
+  - **Famous Drunks**: Warm amber & gold tones; legendary drinkers like Hemingway, Churchill, Bukowski
+  - **Literary**: Deep blues & purples; writers' haunts, literary cocktails, book club culture
+  - **Archetypal**: Mystical purples & magentas; universal drinking personas and rituals
+  - **Prohibition**: Muted sepia & brass; speakeasy era, 1920s culture, bathtub gin
+  - **Ancient Rome**: Terracotta & bronze; Roman wine traditions, symposiums, Bacchanalian culture
+
+### Daily Generative Content
+- **Functionality**: AI-generated daily content for each theme including inspirational quotes, historical stories, cocktail recipes, and surprising facts
+- **Purpose**: Educate and entertain users; provide fresh content daily; establish expertise and cultural depth
+- **Trigger**: App launch, dedicated "Daily" tab, theme exploration
+- **Progression**: View daily theme → Read quote & story → Learn cocktail recipe → Discover historical fact → Explore themed venues
+- **Success criteria**: 60% of daily active users engage with daily content; content sharing increases 3x
+- **Content Elements**:
+  - Thematic quote with attribution
+  - 200-300 word historical/cultural story
+  - Cocktail of the day with recipe and history
+  - Surprising historical fact
+  - Recommended venues matching the theme
+
+### Social Threads (Live & Offline)
+- **Functionality**: Community discussion threads for planning meetups, sharing recommendations, discussing cocktail culture; live threads for same-day coordination, offline for ongoing discussions
+- **Purpose**: Build community; facilitate group coordination; enable knowledge sharing; connect users with shared interests
+- **Trigger**: Create thread button, thread notifications, venue page prompts
+- **Progression**: Browse threads → Join conversation → React to messages → Coordinate meetup → Attend event
+- **Success criteria**: 70% of active users participate in threads; thread-coordinated meetups have 2x attendance
+- **Thread Types**:
+  - Live threads: Real-time coordination for today's plans, urgent RSVPs
+  - Offline threads: Recipe discussions, venue recommendations, cultural deep dives
+
+### Integrated Calendar
+- **Functionality**: Month view calendar showing all happy hours, themed events, bartender specials, and user RSVPs; day detail view with event cards
+- **Purpose**: Help users plan ahead; visualize upcoming opportunities; track RSVPs and capacity; reduce missed events
+- **Trigger**: Calendar tab, date selection, RSVP actions
+- **Progression**: View calendar → Select date → Browse day's events → RSVP → Receive reminder → Attend
+- **Success criteria**: Calendar users attend 3x more events; RSVP completion rate >75%
 
 ### User Role Selection & Onboarding
 - **Functionality**: New users select their role (the-pourer for bartenders, the-drinker for customers) with tailored onboarding flows
@@ -104,7 +150,7 @@ The design should feel modern, vibrant, and social - evoking the optimism of aft
 
 ## Color Selection
 
-Triadic color scheme (three equally spaced colors) that evokes warmth, celebration, and trust - balancing the excitement of nightlife with the reliability of accurate information.
+**Base Application Palette** - Triadic color scheme (three equally spaced colors) that evokes warmth, celebration, and trust - balancing the excitement of nightlife with the reliability of accurate information.
 
 - **Primary Color**: Deep Ocean Blue (oklch(0.45 0.14 250)) - Communicates trust and sophistication, used for primary actions and navigation
 - **Secondary Colors**: 
@@ -118,6 +164,45 @@ Triadic color scheme (three equally spaced colors) that evokes warmth, celebrati
   - Secondary (Sunset Coral oklch(0.72 0.15 35)): Deep Navy text (oklch(0.25 0.08 250)) - Ratio 5.2:1 ✓
   - Accent (Vibrant Gold oklch(0.75 0.16 85)): Deep Navy text (oklch(0.25 0.08 250)) - Ratio 4.9:1 ✓
   - Muted (Light Blue Grey oklch(0.94 0.02 250)): Medium Navy text (oklch(0.48 0.06 250)) - Ratio 5.8:1 ✓
+
+**Thematic Color Schemes** - Each drinking culture theme has a unique, immersive color palette that creates distinct visual identities:
+
+### Famous Drunks Theme (Warm & Bold)
+- Primary: Rich Bourbon (oklch(0.55 0.22 15)) - Deep amber warmth
+- Secondary: Aged Brass (oklch(0.68 0.18 35)) - Sophisticated metallic
+- Accent: Sunset Gold (oklch(0.75 0.20 50)) - Bright celebration
+- Background: Mahogany Dark (oklch(0.15 0.05 20)) - Intimate depth
+- Evokes: Hemingway's bars, Churchill's cigars, vintage whiskey culture
+
+### Literary Theme (Intellectual & Mysterious)
+- Primary: Ink Blue (oklch(0.35 0.12 240)) - Deep contemplation
+- Secondary: Library Purple (oklch(0.58 0.15 200)) - Scholarly mystery
+- Accent: Aqua Highlight (oklch(0.75 0.18 180)) - Bright insights
+- Background: Midnight Navy (oklch(0.12 0.05 260)) - Atmospheric depth
+- Evokes: Algonquin Round Table, Paris cafés, book-lined speakeasies
+
+### Archetypal Theme (Mystical & Universal)
+- Primary: Mystic Plum (oklch(0.45 0.20 310)) - Spiritual depth
+- Secondary: Royal Magenta (oklch(0.65 0.22 340)) - Regal presence
+- Accent: Dawn Pink (oklch(0.78 0.18 20)) - Transcendent light
+- Background: Shadow Purple (oklch(0.10 0.05 300)) - Mysterious foundation
+- Evokes: Universal rituals, archetypal personas, timeless traditions
+
+### Prohibition Theme (Vintage & Clandestine)
+- Primary: Sepia Brown (oklch(0.25 0.05 80)) - Aged photographs
+- Secondary: Brass Fixture (oklch(0.68 0.12 65)) - Art deco elegance
+- Accent: Champagne Fizz (oklch(0.82 0.15 85)) - Hidden luxury
+- Background: Cellar Dark (oklch(0.08 0.02 70)) - Underground secrecy
+- Evokes: Speakeasies, bathtub gin, jazz age rebellion
+
+### Ancient Rome Theme (Imperial & Classical)
+- Primary: Terracotta (oklch(0.52 0.18 45)) - Roman pottery
+- Secondary: Bronze Patina (oklch(0.70 0.16 55)) - Classical metal
+- Accent: Honey Wine (oklch(0.80 0.20 75)) - Mulsum glow
+- Background: Stone Chamber (oklch(0.18 0.06 40)) - Ancient walls
+- Evokes: Symposiums, amphora vessels, Bacchanalian feasts
+
+**Color Application Strategy**: Themes apply to venue cards, event listings, daily content displays, filter buttons, and social thread markers. Color transitions use smooth gradients and subtle animations to maintain visual coherence while establishing strong thematic identity.
 
 ## Font Selection
 

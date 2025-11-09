@@ -14,10 +14,14 @@ import { QuickStats } from '@/components/QuickStats';
 import { RoleSelection } from '@/components/RoleSelection';
 import { BartenderCard } from '@/components/BartenderCard';
 import { EventCard } from '@/components/EventCard';
-import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire } from '@phosphor-icons/react';
-import { Venue, FilterState, UserRole, ThemedEvent } from '@/lib/types';
-import { MOCK_VENUES, MOCK_BARTENDERS, MOCK_EVENTS } from '@/lib/mock-data';
+import { SocialThreadCard } from '@/components/SocialThreadCard';
+import { CalendarView } from '@/components/CalendarView';
+import { DailyContentDisplay } from '@/components/DailyContentDisplay';
+import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire, ChatCircleDots } from '@phosphor-icons/react';
+import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent } from '@/lib/types';
+import { MOCK_VENUES, MOCK_BARTENDERS, MOCK_EVENTS, MOCK_SOCIAL_THREADS, MOCK_CALENDAR_EVENTS } from '@/lib/mock-data';
 import { isDealActiveNow } from '@/lib/time-utils';
+import { generateDailyContent } from '@/lib/daily-content-service';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -25,6 +29,8 @@ function App() {
   const [favorites, setFavorites] = useKV<string[]>('favorites', []);
   const [favoriteBartenders, setFavoriteBartenders] = useKV<string[]>('favorite-bartenders', []);
   const [rsvpdEvents, setRsvpdEvents] = useKV<string[]>('rsvpd-events', []);
+  const [selectedTheme, setSelectedTheme] = useKV<DrinkingTheme | null>('selected-theme', null);
+  const [dailyContent, setDailyContent] = useKV<DailyContent | null>('daily-content', null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -41,6 +47,18 @@ function App() {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const loadDailyContent = async () => {
+      if (!dailyContent || dailyContent.date !== new Date().toISOString().split('T')[0]) {
+        const themes: DrinkingTheme[] = ['famous-drunks', 'literary', 'archetypal', 'prohibition', 'ancient-rome'];
+        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+        const content = await generateDailyContent(randomTheme);
+        setDailyContent(content);
+      }
+    };
+    loadDailyContent();
   }, []);
 
   const filteredVenues = useMemo(() => {
@@ -183,10 +201,10 @@ function App() {
               <div className="relative">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent flex items-center gap-2">
                   <Sparkle weight="fill" className="text-accent" />
-                  HappyHourAI
+                  Hello Happier Hour
                 </h1>
                 <p className="text-sm text-muted-foreground font-medium">
-                  {userRole === 'the-pourer' ? 'Bartender Dashboard' : 'Less scrolling. More sipping.'}
+                  {userRole === 'the-pourer' ? 'Bartender Dashboard' : 'Social drink discovery & cultural exploration'}
                 </p>
               </div>
             </div>
@@ -294,7 +312,7 @@ function App() {
                 transition={{ delay: 0.3 }}
                 className="glass-card p-2 rounded-3xl mb-8"
               >
-                <TabsList className="grid w-full grid-cols-3 bg-transparent gap-2">
+                <TabsList className="grid w-full grid-cols-5 bg-transparent gap-2">
                   <TabsTrigger 
                     value="venues" 
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground rounded-2xl font-bold"
@@ -315,6 +333,20 @@ function App() {
                   >
                     <CalendarBlank className="w-5 h-5 mr-2" weight="fill" />
                     Events
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="social"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground rounded-2xl font-bold"
+                  >
+                    <ChatCircleDots className="w-5 h-5 mr-2" weight="fill" />
+                    Social
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="daily"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-primary data-[state=active]:text-accent-foreground rounded-2xl font-bold"
+                  >
+                    <Sparkle className="w-5 h-5 mr-2" weight="fill" />
+                    Daily
                   </TabsTrigger>
                 </TabsList>
               </motion.div>
@@ -491,6 +523,73 @@ function App() {
                     </motion.div>
                   ))}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="social" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-card p-8 rounded-3xl mb-8"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <ChatCircleDots weight="fill" className="w-6 h-6 text-accent" />
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      Social Threads
+                    </h2>
+                  </div>
+                  <p className="text-muted-foreground text-lg">
+                    Join conversations, plan meetups, and connect with the community
+                  </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {MOCK_SOCIAL_THREADS.map((thread, index) => (
+                    <motion.div
+                      key={thread.id}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        delay: index * 0.1,
+                        type: 'spring',
+                        stiffness: 100,
+                        damping: 15
+                      }}
+                    >
+                      <SocialThreadCard
+                        thread={thread}
+                        onClick={() => {
+                          toast.success('Thread feature coming soon!', {
+                            description: 'Join the conversation and meet fellow drink enthusiasts.'
+                          });
+                        }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="daily" className="mt-0">
+                {dailyContent ? (
+                  <DailyContentDisplay
+                    content={dailyContent}
+                    onExploreVenues={() => {
+                      setFilters({
+                        ...filters,
+                        drinkingThemes: [dailyContent.theme]
+                      });
+                      setActiveTab('venues');
+                    }}
+                  />
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="glass-card p-12 rounded-3xl text-center"
+                  >
+                    <div className="text-6xl mb-4">✨</div>
+                    <p className="text-xl text-muted-foreground">Loading today's content...</p>
+                  </motion.div>
+                )}
               </TabsContent>
             </Tabs>
 
