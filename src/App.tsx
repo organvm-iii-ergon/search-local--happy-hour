@@ -21,9 +21,21 @@ import { DailyContentDisplay } from '@/components/DailyContentDisplay';
 import { ThreadChat } from '@/components/ThreadChat';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { BartenderScheduling } from '@/components/BartenderScheduling';
-import { DrinkingGamesGenerator } from '@/components/DrinkingGamesGenerator';
-import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire, ChatCircleDots, User, DiceFive, Briefcase } from '@phosphor-icons/react';
-import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent, SocialThread, UserProfile, VenueVisit, Achievement } from '@/lib/types';
+import { DrinkingGamesLibrary } from '@/components/DrinkingGamesLibrary';
+import { ReviewSubmissionModal } from '@/components/ReviewSubmissionModal';
+import { DirectMessageList } from '@/components/DirectMessageList';
+import { DirectMessageThread } from '@/components/DirectMessageThread';
+import { EventCreationModal } from '@/components/EventCreationModal';
+import { MenuItemEditor } from '@/components/MenuItemEditor';
+import { HappyHourSpecialCreator } from '@/components/HappyHourSpecialCreator';
+import { VenueManagementDashboard } from '@/components/VenueManagementDashboard';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { RecommendationsPanel } from '@/components/RecommendationsPanel';
+import { ItineraryGenerator } from '@/components/ItineraryGenerator';
+import { DailyChallenges } from '@/components/DailyChallenges';
+import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire, ChatCircleDots, User, DiceFive, Briefcase, Envelope, Plus, Martini } from '@phosphor-icons/react';
+import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent, SocialThread, UserProfile, VenueVisit, Achievement, Review, DirectMessageConversation, DirectMessage, MenuItem, Deal, Notification } from '@/lib/types';
+import { createAchievementNotification, addNotification as addNotificationHelper } from '@/lib/notification-service';
 import { MOCK_VENUES, MOCK_BARTENDERS, MOCK_EVENTS, MOCK_SOCIAL_THREADS, MOCK_CALENDAR_EVENTS } from '@/lib/mock-data';
 import { isDealActiveNow } from '@/lib/time-utils';
 import { generateDailyContent } from '@/lib/daily-content-service';
@@ -35,14 +47,27 @@ function App() {
   const [favorites, setFavorites] = useKV<string[]>('favorites', []);
   const [favoriteBartenders, setFavoriteBartenders] = useKV<string[]>('favorite-bartenders', []);
   const [rsvpdEvents, setRsvpdEvents] = useKV<string[]>('rsvpd-events', []);
+  const [reviewsWritten, setReviewsWritten] = useKV<string[]>('reviews-written', []);
+  const [threadParticipation, setThreadParticipation] = useKV<string[]>('thread-participation', []);
   const [selectedTheme, setSelectedTheme] = useKV<DrinkingTheme | null>('selected-theme', null);
   const [dailyContent, setDailyContent] = useKV<DailyContent | null>('daily-content', null);
   const [visitHistory, setVisitHistory] = useKV<VenueVisit[]>('visit-history', []);
   const [achievements, setAchievements] = useKV<Achievement[]>('achievements', []);
+  const [userReviews, setUserReviews] = useKV<Review[]>('user-reviews', []);
+  const [dmConversations, setDmConversations] = useKV<DirectMessageConversation[]>('dm-conversations', []);
+  const [userEvents, setUserEvents] = useKV<ThemedEvent[]>('user-events', []);
+  const [userMenuItems, setUserMenuItems] = useKV<MenuItem[]>('user-menu-items', []);
+  const [venueDeals, setVenueDeals] = useKV<Deal[]>('venue-deals', []);
+  const [notifications, setNotifications] = useKV<Notification[]>('notifications', []);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedThread, setSelectedThread] = useState<SocialThread | null>(null);
+  const [selectedDMConversation, setSelectedDMConversation] = useState<DirectMessageConversation | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showScheduling, setShowScheduling] = useState(false);
+  const [showEventCreator, setShowEventCreator] = useState(false);
+  const [showMenuEditor, setShowMenuEditor] = useState(false);
+  const [showDealCreator, setShowDealCreator] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [activeTab, setActiveTab] = useState('venues');
@@ -123,14 +148,17 @@ function App() {
         return favs.filter(id => id !== venueId);
       }
       toast.success('Added to favorites!');
-      
+
+      // Find the venue to get its themes
+      const venue = MOCK_VENUES.find(v => v.id === venueId);
       const newVisit: VenueVisit = {
         venueId,
         date: new Date().toISOString(),
-        reviewed: false
+        reviewed: false,
+        themes: venue?.drinkingThemes || []
       };
       setVisitHistory((current) => [...(current || []), newVisit]);
-      
+
       return [...favs, venueId];
     });
   };
@@ -147,6 +175,9 @@ function App() {
         favoriteBartenders: favoriteBartenders || [],
         following: [],
         visitHistory: visitHistory,
+        rsvpdEvents: rsvpdEvents || [],
+        reviewsWritten: reviewsWritten || [],
+        threadParticipation: threadParticipation || [],
         achievements: achievements,
         createdAt: new Date().toISOString()
       };
@@ -158,10 +189,18 @@ function App() {
           toast.success(`Achievement Unlocked! ${achievement.icon}`, {
             description: achievement.title
           });
+
+          // Create notification for achievement
+          const notif = createAchievementNotification(
+            achievement.title,
+            achievement.description,
+            achievement.icon
+          );
+          setNotifications((current) => addNotificationHelper(current || [], notif));
         });
       }
     }
-  }, [visitHistory?.length, favoriteBartenders?.length]);
+  }, [visitHistory?.length, favoriteBartenders?.length, rsvpdEvents?.length, reviewsWritten?.length, threadParticipation?.length]);
 
   const toggleBartenderFollow = (bartenderId: string) => {
     setFavoriteBartenders((currentFavorites) => {
@@ -187,6 +226,141 @@ function App() {
     });
   };
 
+  const trackThreadParticipation = (threadId: string) => {
+    setThreadParticipation((current) => {
+      const participation = current || [];
+      if (!participation.includes(threadId)) {
+        return [...participation, threadId];
+      }
+      return participation;
+    });
+  };
+
+  const handleSubmitReview = (review: Omit<Review, 'id' | 'userId' | 'date' | 'helpfulCount'>) => {
+    const newReview: Review = {
+      ...review,
+      id: `review-${Date.now()}`,
+      userId: 'user-1',
+      date: new Date().toISOString(),
+      helpfulCount: 0
+    };
+
+    setUserReviews((current) => [...(current || []), newReview]);
+
+    // Track review for achievements
+    setReviewsWritten((current) => {
+      const reviews = current || [];
+      if (!reviews.includes(newReview.id)) {
+        return [...reviews, newReview.id];
+      }
+      return reviews;
+    });
+
+    // Mark visit as reviewed if exists
+    setVisitHistory((current) =>
+      (current || []).map(visit =>
+        visit.venueId === review.venueId
+          ? { ...visit, reviewed: true, rating: review.rating }
+          : visit
+      )
+    );
+  };
+
+  const startDirectMessage = (recipientId: string, recipientName: string, recipientAvatar: string, recipientRole: UserRole) => {
+    // Check if conversation already exists
+    const existingConversation = dmConversations?.find(conv =>
+      (conv.participant1.id === 'user-1' && conv.participant2.id === recipientId) ||
+      (conv.participant2.id === 'user-1' && conv.participant1.id === recipientId)
+    );
+
+    if (existingConversation) {
+      setSelectedDMConversation(existingConversation);
+      setActiveTab('messages');
+      return;
+    }
+
+    // Create new conversation
+    const newConversation: DirectMessageConversation = {
+      id: `conv-${Date.now()}`,
+      participant1: {
+        id: 'user-1',
+        name: 'You',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
+        role: userRole || 'the-drinker'
+      },
+      participant2: {
+        id: recipientId,
+        name: recipientName,
+        avatar: recipientAvatar,
+        role: recipientRole
+      },
+      unreadCount: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    setDmConversations((current) => [...(current || []), newConversation]);
+    setSelectedDMConversation(newConversation);
+    setActiveTab('messages');
+    toast.success(`Started conversation with ${recipientName}`);
+  };
+
+  const handleDMSent = (conversationId: string) => {
+    // Update last message in conversation
+    setDmConversations((current) => {
+      const conversations = current || [];
+      return conversations.map(conv => {
+        if (conv.id === conversationId) {
+          // Get the messages for this conversation from localStorage
+          const messagesKey = `dm-${conversationId}`;
+          const storedMessages = localStorage.getItem(messagesKey);
+          if (storedMessages) {
+            const messages: DirectMessage[] = JSON.parse(storedMessages);
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage) {
+              return {
+                ...conv,
+                lastMessage: {
+                  content: lastMessage.content,
+                  timestamp: lastMessage.timestamp,
+                  senderId: lastMessage.senderId
+                }
+              };
+            }
+          }
+        }
+        return conv;
+      });
+    });
+  };
+
+  const handleCreateEvent = (event: Omit<ThemedEvent, 'id'>) => {
+    const newEvent: ThemedEvent = {
+      ...event,
+      id: `event-${Date.now()}`
+    };
+    setUserEvents((current) => [...(current || []), newEvent]);
+  };
+
+  const handleCreateMenuItem = (item: Omit<MenuItem, 'id' | 'createdAt'>) => {
+    const newItem: MenuItem = {
+      ...item,
+      id: `menu-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    setUserMenuItems((current) => [...(current || []), newItem]);
+  };
+
+  const handleCreateDeal = (deal: Omit<Deal, 'id'>) => {
+    const newDeal: Deal = {
+      ...deal,
+      id: `deal-${Date.now()}`
+    };
+    setVenueDeals((current) => [...(current || []), newDeal]);
+    toast.success('Happy hour special created!', {
+      description: 'Your special is now live and visible to customers.'
+    });
+  };
+
   const allEvents = useMemo(() => {
     const events: ThemedEvent[] = [];
     MOCK_VENUES.forEach(venue => {
@@ -194,8 +368,12 @@ function App() {
         venue.events.forEach(event => events.push(event));
       }
     });
+    // Add user-created events
+    if (userEvents) {
+      events.push(...userEvents);
+    }
     return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, []);
+  }, [userEvents]);
 
   const activeFilterCount = 
     filters.dealTypes.length + 
@@ -258,9 +436,10 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <NotificationCenter />
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="icon"
                   onClick={() => setShowFilters(!showFilters)}
                   className="relative glass-morphic border-border/50 hover:border-accent/50 transition-all duration-300"
@@ -361,50 +540,62 @@ function App() {
                 transition={{ delay: 0.3 }}
                 className="glass-card p-2 rounded-3xl mb-8"
               >
-                <TabsList className="grid w-full grid-cols-7 bg-transparent gap-2">
-                  <TabsTrigger 
-                    value="venues" 
+                <TabsList className="grid w-full grid-cols-8 bg-transparent gap-2">
+                  <TabsTrigger
+                    value="venues"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground rounded-2xl font-bold"
                   >
                     <Fire className="w-5 h-5 mr-2" weight="fill" />
                     Venues
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="bartenders"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-accent data-[state=active]:text-secondary-foreground rounded-2xl font-bold"
                   >
                     <UsersIcon className="w-5 h-5 mr-2" weight="fill" />
                     Bartenders
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="events"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-secondary data-[state=active]:text-accent-foreground rounded-2xl font-bold"
                   >
                     <CalendarBlank className="w-5 h-5 mr-2" weight="fill" />
                     Events
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="social"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground rounded-2xl font-bold"
                   >
                     <ChatCircleDots className="w-5 h-5 mr-2" weight="fill" />
                     Social
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
+                    value="messages"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-primary data-[state=active]:text-accent-foreground rounded-2xl font-bold relative"
+                  >
+                    <Envelope className="w-5 h-5 mr-2" weight="fill" />
+                    Messages
+                    {dmConversations && dmConversations.filter(c => c.unreadCount > 0).length > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-accent text-xs">
+                        {dmConversations.filter(c => c.unreadCount > 0).length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="daily"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-primary data-[state=active]:text-accent-foreground rounded-2xl font-bold"
                   >
                     <Sparkle className="w-5 h-5 mr-2" weight="fill" />
                     Daily
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="games"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-primary data-[state=active]:text-secondary-foreground rounded-2xl font-bold"
                   >
                     <DiceFive className="w-5 h-5 mr-2" weight="fill" />
                     Games
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="profile"
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground rounded-2xl font-bold"
                   >
@@ -415,8 +606,35 @@ function App() {
               </motion.div>
 
               <TabsContent value="venues" className="mt-0">
+                {/* Recommendations Panel */}
+                {filteredVenues.length > 0 && !filters.searchQuery && (
+                  <RecommendationsPanel
+                    allVenues={MOCK_VENUES}
+                    userProfile={{
+                      id: 'user-1',
+                      role: userRole || 'the-drinker',
+                      name: 'You',
+                      email: 'user@example.com',
+                      favoriteVenues: favorites || [],
+                      favoriteBartenders: favoriteBartenders || [],
+                      following: [],
+                      visitHistory: visitHistory || [],
+                      preferences: {
+                        priceRange: [1, 2, 3]
+                      },
+                      createdAt: new Date().toISOString()
+                    }}
+                    visitHistory={visitHistory || []}
+                    favoriteVenues={favorites || []}
+                    selectedTheme={selectedTheme}
+                    onSelectVenue={setSelectedVenue}
+                    onToggleFavorite={toggleFavorite}
+                    onCheckIn={checkInVenue}
+                  />
+                )}
+
                 <QuickStats venues={filteredVenues} />
-                
+
                 <AnimatePresence mode="wait">
                   {filteredVenues.length === 0 ? (
                     <motion.div 
@@ -538,6 +756,9 @@ function App() {
                           const venue = MOCK_VENUES.find(v => v.bartenders?.some(b => b.id === id));
                           if (venue) setSelectedVenue(venue);
                         }}
+                        onMessage={(id, name, avatar) => {
+                          startDirectMessage(id, name, avatar, 'the-pourer');
+                        }}
                       />
                     </motion.div>
                   ))}
@@ -550,11 +771,22 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="glass-card p-8 rounded-3xl mb-8"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <CalendarBlank weight="fill" className="w-6 h-6 text-accent" />
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
-                      Upcoming Events
-                    </h2>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <CalendarBlank weight="fill" className="w-6 h-6 text-accent" />
+                      <h2 className="text-3xl font-bold bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
+                        Upcoming Events
+                      </h2>
+                    </div>
+                    {userRole === 'the-pourer' && (
+                      <Button
+                        onClick={() => setShowEventCreator(true)}
+                        className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                      >
+                        <Plus className="w-4 h-4 mr-2" weight="bold" />
+                        Create Event
+                      </Button>
+                    )}
                   </div>
                   <p className="text-muted-foreground text-lg">
                     Don't miss out on themed nights and special experiences
@@ -586,6 +818,20 @@ function App() {
                     </motion.div>
                   ))}
                 </div>
+
+                {/* Bar Crawl Itinerary Generator */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-12"
+                >
+                  <ItineraryGenerator
+                    allVenues={MOCK_VENUES}
+                    visitHistory={visitHistory}
+                    favoriteVenues={favorites}
+                  />
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="social" className="mt-0">
@@ -627,18 +873,74 @@ function App() {
                 </div>
               </TabsContent>
 
+              <TabsContent value="messages" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-card rounded-3xl overflow-hidden h-[700px] flex"
+                >
+                  {selectedDMConversation ? (
+                    <DirectMessageThread
+                      conversation={selectedDMConversation}
+                      currentUserId="user-1"
+                      currentUserName="You"
+                      currentUserAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
+                      onBack={() => setSelectedDMConversation(null)}
+                      onMessageSent={handleDMSent}
+                    />
+                  ) : (
+                    <DirectMessageList
+                      conversations={dmConversations || []}
+                      currentUserId="user-1"
+                      onSelectConversation={setSelectedDMConversation}
+                      selectedConversationId={selectedDMConversation?.id}
+                    />
+                  )}
+                </motion.div>
+              </TabsContent>
+
               <TabsContent value="daily" className="mt-0">
                 {dailyContent ? (
-                  <DailyContentDisplay
-                    content={dailyContent}
-                    onExploreVenues={() => {
-                      setFilters({
-                        ...filters,
-                        drinkingThemes: [dailyContent.theme]
-                      });
-                      setActiveTab('venues');
-                    }}
-                  />
+                  <>
+                    <DailyContentDisplay
+                      content={dailyContent}
+                      onExploreVenues={() => {
+                        setFilters({
+                          ...filters,
+                          drinkingThemes: [dailyContent.theme]
+                        });
+                        setActiveTab('venues');
+                      }}
+                    />
+
+                    {/* Daily Challenges */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-12"
+                    >
+                      <DailyChallenges
+                        userProfile={{
+                          id: 'user-1',
+                          role: userRole || 'the-drinker',
+                          name: 'You',
+                          email: 'user@example.com',
+                          favoriteVenues: favorites || [],
+                          favoriteBartenders: favoriteBartenders || [],
+                          following: [],
+                          visitHistory: visitHistory || [],
+                          rsvpdEvents: rsvpdEvents || [],
+                          reviewsWritten: reviewsWritten || [],
+                          threadParticipation: threadParticipation || [],
+                          createdAt: new Date().toISOString()
+                        }}
+                        visitHistory={visitHistory || []}
+                        allVenues={MOCK_VENUES}
+                        onSelectVenue={setSelectedVenue}
+                      />
+                    </motion.div>
+                  </>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -652,7 +954,7 @@ function App() {
               </TabsContent>
 
               <TabsContent value="games" className="mt-0">
-                <DrinkingGamesGenerator />
+                <DrinkingGamesLibrary />
               </TabsContent>
 
               <TabsContent value="profile" className="mt-0">
@@ -661,6 +963,56 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-6"
                 >
+                  {userRole === 'the-pourer' && (
+                    <div className="glass-card p-6 rounded-3xl">
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <Martini weight="fill" className="text-accent" />
+                        Bartender Tools
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Button
+                          onClick={() => setShowEventCreator(true)}
+                          variant="outline"
+                          className="glass-morphic border-accent/50 hover:border-accent h-auto py-4"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <CalendarBlank className="w-6 h-6" weight="fill" />
+                            <span className="font-bold">Create Event</span>
+                            <span className="text-xs text-muted-foreground">Host themed experiences</span>
+                          </div>
+                        </Button>
+                        <Button
+                          onClick={() => setShowMenuEditor(true)}
+                          variant="outline"
+                          className="glass-morphic border-accent/50 hover:border-accent h-auto py-4"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <Martini className="w-6 h-6" weight="fill" />
+                            <span className="font-bold">Add Menu Item</span>
+                            <span className="text-xs text-muted-foreground">Create signature drinks</span>
+                          </div>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {userRole === 'the-venue' && (
+                    <VenueManagementDashboard
+                      venue={{
+                        ...MOCK_VENUES[0],
+                        id: 'user-venue-1',
+                        name: 'Your Venue',
+                        deals: venueDeals || []
+                      }}
+                      applications={[]}
+                      reviews={userReviews}
+                      events={userEvents}
+                      onCreateDeal={() => setShowDealCreator(true)}
+                      onCreateEvent={() => setShowEventCreator(true)}
+                      onViewApplications={() => setShowScheduling(true)}
+                    />
+                  )}
+
                   <div className="glass-card p-8 rounded-3xl">
                     <div className="flex items-center gap-3 mb-6">
                       <User weight="fill" className="w-6 h-6 text-accent" />
@@ -781,6 +1133,22 @@ function App() {
         venue={selectedVenue}
         open={!!selectedVenue}
         onOpenChange={(open) => !open && setSelectedVenue(null)}
+        userReviews={userReviews}
+        onWriteReview={() => {
+          if (selectedVenue) {
+            setShowReviewModal(true);
+          }
+        }}
+      />
+
+      <ReviewSubmissionModal
+        venue={selectedVenue}
+        open={showReviewModal}
+        onOpenChange={setShowReviewModal}
+        onSubmit={handleSubmitReview}
+        currentUserId="user-1"
+        currentUserName="You"
+        currentUserAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
       />
 
       <Dialog open={!!selectedThread} onOpenChange={(open) => !open && setSelectedThread(null)}>
@@ -797,6 +1165,7 @@ function App() {
                 currentUserName="You"
                 currentUserAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
                 currentUserRole={userRole || 'the-drinker'}
+                onMessageSent={trackThreadParticipation}
               />
             </div>
           )}
@@ -829,6 +1198,32 @@ function App() {
             userRole={userRole === 'the-drinker' ? null : userRole}
             open={showScheduling}
             onOpenChange={setShowScheduling}
+            currentUserId="user-1"
+            currentUserName="You"
+            currentUserAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
+          />
+
+          <EventCreationModal
+            open={showEventCreator}
+            onOpenChange={setShowEventCreator}
+            onSubmit={handleCreateEvent}
+            bartenderId="user-1"
+            bartenderName="You"
+            venues={MOCK_VENUES}
+          />
+
+          <MenuItemEditor
+            open={showMenuEditor}
+            onOpenChange={setShowMenuEditor}
+            onSubmit={handleCreateMenuItem}
+            bartenderId="user-1"
+          />
+
+          <HappyHourSpecialCreator
+            open={showDealCreator}
+            onOpenChange={setShowDealCreator}
+            onSubmit={handleCreateDeal}
+            venueId="user-venue-1"
           />
         </>
       )}

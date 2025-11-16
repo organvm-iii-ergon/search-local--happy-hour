@@ -23,7 +23,7 @@ import {
   CalendarBlank,
   ChatCircle
 } from '@phosphor-icons/react';
-import { Venue, DealType } from '@/lib/types';
+import { Venue, DealType, Review } from '@/lib/types';
 import { isDealActiveNow, formatTimeRange, getRelativeTime } from '@/lib/time-utils';
 import { BartenderCard } from '@/components/BartenderCard';
 import { EventCard } from '@/components/EventCard';
@@ -38,6 +38,8 @@ interface VenueDetailProps {
   venue: Venue | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userReviews?: Review[];
+  onWriteReview?: () => void;
 }
 
 const dealIcons: Record<DealType, React.ReactNode> = {
@@ -48,13 +50,15 @@ const dealIcons: Record<DealType, React.ReactNode> = {
   all: <Sparkle className="w-5 h-5" weight="fill" />
 };
 
-export function VenueDetail({ venue, open, onOpenChange }: VenueDetailProps) {
+export function VenueDetail({ venue, open, onOpenChange, userReviews = [], onWriteReview }: VenueDetailProps) {
   const [activeTab, setActiveTab] = useState('deals');
-  
+
   if (!venue) return null;
 
   const priceSymbol = '$'.repeat(venue.priceLevel);
-  const venueReviews = venue.id in MOCK_REVIEWS ? MOCK_REVIEWS[venue.id] : [];
+  const mockReviews = venue.id in MOCK_REVIEWS ? MOCK_REVIEWS[venue.id] : [];
+  const venueUserReviews = userReviews.filter(r => r.venueId === venue.id);
+  const allReviews = [...venueUserReviews, ...mockReviews];
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -411,19 +415,37 @@ export function VenueDetail({ venue, open, onOpenChange }: VenueDetailProps) {
 
                   <TabsContent value="reviews" className="mt-0">
                     <div className="space-y-6">
-                      <motion.h3 
-                        className="font-bold text-3xl mb-6 flex items-center gap-3"
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                      >
-                        <ChatCircle className="w-7 h-7 text-accent" weight="fill" />
-                        <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                          Customer Reviews
-                        </span>
-                      </motion.h3>
-                      {venueReviews.length > 0 ? (
+                      <div className="flex items-center justify-between mb-6">
+                        <motion.h3
+                          className="font-bold text-3xl flex items-center gap-3"
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                        >
+                          <ChatCircle className="w-7 h-7 text-accent" weight="fill" />
+                          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                            Customer Reviews
+                          </span>
+                        </motion.h3>
+                        {onWriteReview && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button
+                              onClick={onWriteReview}
+                              className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                            >
+                              <Star className="w-4 h-4 mr-2" weight="fill" />
+                              Write a Review
+                            </Button>
+                          </motion.div>
+                        )}
+                      </div>
+                      {allReviews.length > 0 ? (
                         <div className="space-y-6">
-                          {venueReviews.map((review, index) => (
+                          {allReviews.map((review, index) => (
                             <motion.div
                               key={review.id}
                               initial={{ opacity: 0, y: 20 }}
@@ -436,9 +458,18 @@ export function VenueDetail({ venue, open, onOpenChange }: VenueDetailProps) {
                         </div>
                       ) : (
                         <div className="glass-card p-12 rounded-3xl text-center">
-                          <p className="text-muted-foreground text-lg">
+                          <p className="text-muted-foreground text-lg mb-4">
                             No reviews yet. Be the first to share your experience!
                           </p>
+                          {onWriteReview && (
+                            <Button
+                              onClick={onWriteReview}
+                              className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                            >
+                              <Star className="w-4 h-4 mr-2" weight="fill" />
+                              Write the First Review
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>

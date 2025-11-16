@@ -2,10 +2,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Star, 
-  Users, 
-  CheckCircle, 
+import {
+  Star,
+  Users,
+  CheckCircle,
   Sparkle,
   Wine,
   Martini,
@@ -14,7 +14,8 @@ import {
   Crown,
   Scroll,
   MaskHappy,
-  Columns
+  Columns,
+  ChatCircleDots
 } from '@phosphor-icons/react';
 import { Bartender, DrinkingTheme } from '@/lib/types';
 import { motion } from 'framer-motion';
@@ -32,13 +33,15 @@ interface BartenderCardProps {
   isFollowing?: boolean;
   onToggleFollow?: (bartenderId: string) => void;
   onViewProfile?: (bartenderId: string) => void;
+  onMessage?: (bartenderId: string, bartenderName: string, bartenderAvatar: string) => void;
 }
 
-export function BartenderCard({ 
-  bartender, 
-  isFollowing = false, 
+export function BartenderCard({
+  bartender,
+  isFollowing = false,
   onToggleFollow,
-  onViewProfile 
+  onViewProfile,
+  onMessage
 }: BartenderCardProps) {
   return (
     <motion.div
@@ -177,21 +180,48 @@ export function BartenderCard({
           </div>
         </div>
 
-        {onViewProfile && (
-          <motion.div
-            className="mt-4"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full glass-morphic border-border/50 hover:border-primary/50 font-semibold"
-              onClick={() => onViewProfile(bartender.id)}
-            >
-              View Full Profile
-            </Button>
-          </motion.div>
+        {(onViewProfile || onMessage) && (
+          <div className="mt-4 flex gap-2">
+            {onMessage && (
+              <motion.div
+                className="flex-1"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full glass-morphic border-accent/50 hover:border-accent hover:bg-accent/10 font-semibold"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMessage(bartender.id, bartender.name, bartender.avatar);
+                  }}
+                >
+                  <ChatCircleDots className="w-4 h-4 mr-2" weight="fill" />
+                  Message
+                </Button>
+              </motion.div>
+            )}
+            {onViewProfile && (
+              <motion.div
+                className={onMessage ? "flex-1" : "w-full"}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full glass-morphic border-border/50 hover:border-primary/50 font-semibold"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onViewProfile) onViewProfile(bartender.id);
+                  }}
+                >
+                  View Profile
+                </Button>
+              </motion.div>
+            )}
+          </div>
         )}
       </Card>
     </motion.div>

@@ -24,16 +24,18 @@ interface ThreadChatProps {
   currentUserName: string;
   currentUserAvatar: string;
   currentUserRole: UserRole;
+  onMessageSent?: (threadId: string) => void;
 }
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '🎉', '🍻', '🔥', '👀', '✨'];
 
-export function ThreadChat({ 
-  threadId, 
-  currentUserId, 
-  currentUserName, 
+export function ThreadChat({
+  threadId,
+  currentUserId,
+  currentUserName,
   currentUserAvatar,
-  currentUserRole 
+  currentUserRole,
+  onMessageSent
 }: ThreadChatProps) {
   const [messages, setMessages] = useKV<ChatMessage[]>(`thread-${threadId}-messages`, []);
   const [newMessage, setNewMessage] = useState('');
@@ -71,6 +73,11 @@ export function ThreadChat({
     setNewMessage('');
     setReplyTo(null);
     toast.success('Message sent!');
+
+    // Track thread participation for achievements
+    if (onMessageSent) {
+      onMessageSent(threadId);
+    }
   };
 
   const handleEdit = (messageId: string) => {
@@ -165,7 +172,10 @@ export function ThreadChat({
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         return (
-          <span key={i} className="text-accent font-semibold">
+          <span
+            key={i}
+            className="text-accent font-semibold bg-accent/10 px-1.5 py-0.5 rounded-md hover:bg-accent/20 transition-colors cursor-pointer"
+          >
             {part}
           </span>
         );
@@ -259,20 +269,31 @@ export function ThreadChat({
                     {message.reactions.length > 0 && (
                       <div className="flex gap-1 mt-2 flex-wrap">
                         {message.reactions.map((reaction) => (
-                          <motion.button
-                            key={reaction.emoji}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleReaction(message.id, reaction.emoji)}
-                            className={`px-2 py-1 rounded-full text-xs glass-morphic flex items-center gap-1 ${
-                              reaction.users.includes(currentUserId)
-                                ? 'ring-2 ring-accent'
-                                : ''
-                            }`}
-                          >
-                            <span>{reaction.emoji}</span>
-                            <span className="font-medium">{reaction.count}</span>
-                          </motion.button>
+                          <Popover key={reaction.emoji}>
+                            <PopoverTrigger asChild>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleReaction(message.id, reaction.emoji)}
+                                className={`px-2 py-1 rounded-full text-xs glass-morphic flex items-center gap-1 hover:bg-accent/10 transition-colors ${
+                                  reaction.users.includes(currentUserId)
+                                    ? 'ring-2 ring-accent bg-accent/5'
+                                    : ''
+                                }`}
+                              >
+                                <span>{reaction.emoji}</span>
+                                <span className="font-medium">{reaction.count}</span>
+                              </motion.button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2">
+                              <div className="text-xs">
+                                <p className="font-semibold mb-1">Reacted with {reaction.emoji}</p>
+                                <p className="text-muted-foreground">
+                                  {reaction.count} {reaction.count === 1 ? 'person' : 'people'}
+                                </p>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         ))}
                       </div>
                     )}

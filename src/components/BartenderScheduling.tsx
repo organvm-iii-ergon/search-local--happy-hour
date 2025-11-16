@@ -13,11 +13,13 @@ import {
   Users,
   Briefcase,
   CurrencyDollar,
-  Check
+  Check,
+  X
 } from '@phosphor-icons/react';
-import { BartenderSchedule, JobPosting, DayOfWeek } from '@/lib/types';
+import { BartenderSchedule, JobPosting, DayOfWeek, JobApplication } from '@/lib/types';
 import { MOCK_VENUES } from '@/lib/mock-data';
 import { toast } from 'sonner';
+import { JobApplicationModal } from '@/components/JobApplicationModal';
 
 interface BartenderSchedulingProps {
   bartenderId?: string;
@@ -25,35 +27,90 @@ interface BartenderSchedulingProps {
   userRole: 'the-pourer' | 'the-venue' | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentUserId: string;
+  currentUserName: string;
+  currentUserAvatar: string;
 }
 
 const DAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-export function BartenderScheduling({ 
-  bartenderId, 
-  venueId, 
-  userRole, 
-  open, 
-  onOpenChange 
+export function BartenderScheduling({
+  bartenderId,
+  venueId,
+  userRole,
+  open,
+  onOpenChange,
+  currentUserId,
+  currentUserName,
+  currentUserAvatar
 }: BartenderSchedulingProps) {
   const [schedules, setSchedules] = useKV<BartenderSchedule[]>('bartender-schedules', []);
   const [jobPostings, setJobPostings] = useKV<JobPosting[]>('job-postings', []);
+  const [applications, setApplications] = useKV<JobApplication[]>('job-applications', []);
   const [activeTab, setActiveTab] = useState(userRole === 'the-venue' ? 'postings' : 'schedule');
+  const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
-  const mySchedule = schedules?.filter(s => 
+  const mySchedule = schedules?.filter(s =>
     bartenderId ? s.bartenderId === bartenderId : true
   ) || [];
 
-  const myPostings = jobPostings?.filter(p => 
+  const myPostings = jobPostings?.filter(p =>
     venueId ? p.venueId === venueId : true
   ) || [];
 
   const availableJobs = jobPostings?.filter(p => p.status === 'open') || [];
 
-  const handleApplyJob = (jobId: string) => {
-    toast.success('Application submitted!', {
-      description: 'The venue will review your application soon.'
-    });
+  const myApplications = applications?.filter(a =>
+    a.applicantId === currentUserId
+  ) || [];
+
+  const postingApplications = (postingId: string) =>
+    applications?.filter(a => a.jobId === postingId) || [];
+
+  const handleApplyJob = (job: JobPosting) => {
+    // Check if already applied
+    const alreadyApplied = applications?.some(a =>
+      a.jobId === job.id && a.applicantId === currentUserId
+    );
+
+    if (alreadyApplied) {
+      toast.error('You have already applied to this position');
+      return;
+    }
+
+    setSelectedJob(job);
+    setShowApplicationModal(true);
+  };
+
+  const handleSubmitApplication = (application: Omit<JobApplication, 'id' | 'appliedAt'>) => {
+    const newApplication: JobApplication = {
+      ...application,
+      id: `app-${Date.now()}`,
+      appliedAt: new Date().toISOString()
+    };
+
+    setApplications((current) => [...(current || []), newApplication]);
+
+    // Update job applicant count
+    setJobPostings((current) =>
+      (current || []).map(job =>
+        job.id === application.jobId
+          ? { ...job, applicants: job.applicants + 1 }
+          : job
+      )
+    );
+  };
+
+  const handleUpdateApplicationStatus = (applicationId: string, status: JobApplication['status']) => {
+    setApplications((current) =>
+      (current || []).map(app =>
+        app.id === applicationId
+          ? { ...app, status }
+          : app
+      )
+    );
+    toast.success(`Application ${status}`);
   };
 
   const handleCreatePosting = () => {
@@ -227,7 +284,7 @@ export function BartenderScheduling({
                             </div>
                             <Button
                               className="bg-gradient-to-r from-accent to-secondary"
-                              onClick={() => handleApplyJob(job.id)}
+                              onClick={() => handleApplyJob(job)}
                             >
                               Apply Now
                             </Button>
@@ -351,18 +408,67 @@ export function BartenderScheduling({
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-12 glass-card rounded-3xl">
-                    <div className="text-6xl mb-4">📝</div>
-                    <h3 className="text-xl font-bold mb-2">Your Applications</h3>
-                    <p className="text-muted-foreground">
-                      Track the status of your job applications
-                    </p>
-                  </div>
+                  <>
+                    <h3 className="text-lg font-bold mb-4">Your Applications</h3>
+                    {myApplications.length === 0 ? (
+                      <div className="text-center py-12 glass-card rounded-3xl">
+                        <div className="text-6xl mb-4">📝</div>
+                        <h3 className="text-xl font-bold mb-2">No applications yet</h3>
+                        <p className="text-muted-foreground">
+                          Check the job board to find opportunities
+                        </p>
+                      </div>
+                    ) : (
+                      myApplications.map((app, index) => (
+                        <motion.div
+                          key={app.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="glass-card p-6 rounded-3xl mb-4"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="text-xl font-bold mb-2">{app.jobTitle}</h4>
+                              <Badge className="bg-gradient-to-r from-primary to-accent mb-3">
+                                <MapPin className="w-3 h-3 mr-1" weight="fill" />
+                                {app.venueName}
+                              </Badge>
+                            </div>
+                            <Badge
+                              className={
+                                app.status === 'accepted' ? 'bg-green-500' :
+                                app.status === 'rejected' ? 'bg-red-500' :
+                                app.status === 'interviewing' ? 'bg-blue-500' :
+                                app.status === 'reviewed' ? 'bg-yellow-500' :
+                                'bg-gray-500'
+                              }
+                            >
+                              {app.status}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Applied {new Date(app.appliedAt).toLocaleDateString()}
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </>
                 )}
               </div>
             </ScrollArea>
           </TabsContent>
         </Tabs>
+
+        <JobApplicationModal
+          job={selectedJob}
+          open={showApplicationModal}
+          onOpenChange={setShowApplicationModal}
+          onSubmit={handleSubmitApplication}
+          applicantId={currentUserId}
+          applicantName={currentUserName}
+          applicantAvatar={currentUserAvatar}
+        />
       </DialogContent>
     </Dialog>
   );

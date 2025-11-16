@@ -206,19 +206,27 @@ function shouldUnlockAchievement(def: AchievementType, profile: UserProfile): bo
       return (profile.favoriteBartenders?.length || 0) >= requirement.target;
 
     case 'event_attend':
-      return 0 >= requirement.target;
+      return (profile.rsvpdEvents?.length || 0) >= requirement.target;
 
     case 'review_count':
-      return 0 >= requirement.target;
+      return (profile.reviewsWritten?.length || 0) >= requirement.target;
 
     case 'social_engagement':
-      return 0 >= requirement.target;
+      return (profile.threadParticipation?.length || 0) >= requirement.target;
 
     case 'theme_exploration': {
       if (requirement.theme) {
-        return 0 >= requirement.target;
+        // Count visits to venues with this specific theme
+        const themeVisits = profile.visitHistory?.filter(visit =>
+          visit.themes?.includes(requirement.theme as any)
+        ).length || 0;
+        return themeVisits >= requirement.target;
       }
-      return false;
+      // For Theme Master achievement - count total themed visits
+      const totalThemeVisits = profile.visitHistory?.filter(visit =>
+        visit.themes && visit.themes.length > 0
+      ).length || 0;
+      return totalThemeVisits >= requirement.target;
     }
 
     default:
@@ -249,11 +257,31 @@ export function getAchievementProgress(
       break;
 
     case 'event_attend':
-    case 'review_count':
-    case 'social_engagement':
-    case 'theme_exploration':
-      current = 0;
+      current = profile.rsvpdEvents?.length || 0;
       break;
+
+    case 'review_count':
+      current = profile.reviewsWritten?.length || 0;
+      break;
+
+    case 'social_engagement':
+      current = profile.threadParticipation?.length || 0;
+      break;
+
+    case 'theme_exploration': {
+      if (requirement.theme) {
+        // Count visits to venues with this specific theme
+        current = profile.visitHistory?.filter(visit =>
+          visit.themes?.includes(requirement.theme as any)
+        ).length || 0;
+      } else {
+        // For Theme Master achievement - count total themed visits
+        current = profile.visitHistory?.filter(visit =>
+          visit.themes && visit.themes.length > 0
+        ).length || 0;
+      }
+      break;
+    }
 
     default:
       current = 0;
