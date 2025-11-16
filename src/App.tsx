@@ -32,6 +32,7 @@ import { VenueManagementDashboard } from '@/components/VenueManagementDashboard'
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { RecommendationsPanel } from '@/components/RecommendationsPanel';
 import { ItineraryGenerator } from '@/components/ItineraryGenerator';
+import { DailyChallenges } from '@/components/DailyChallenges';
 import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire, ChatCircleDots, User, DiceFive, Briefcase, Envelope, Plus, Martini } from '@phosphor-icons/react';
 import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent, SocialThread, UserProfile, VenueVisit, Achievement, Review, DirectMessageConversation, DirectMessage, MenuItem, Deal, Notification } from '@/lib/types';
 import { createAchievementNotification, addNotification as addNotificationHelper } from '@/lib/notification-service';
@@ -900,16 +901,46 @@ function App() {
 
               <TabsContent value="daily" className="mt-0">
                 {dailyContent ? (
-                  <DailyContentDisplay
-                    content={dailyContent}
-                    onExploreVenues={() => {
-                      setFilters({
-                        ...filters,
-                        drinkingThemes: [dailyContent.theme]
-                      });
-                      setActiveTab('venues');
-                    }}
-                  />
+                  <>
+                    <DailyContentDisplay
+                      content={dailyContent}
+                      onExploreVenues={() => {
+                        setFilters({
+                          ...filters,
+                          drinkingThemes: [dailyContent.theme]
+                        });
+                        setActiveTab('venues');
+                      }}
+                    />
+
+                    {/* Daily Challenges */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-12"
+                    >
+                      <DailyChallenges
+                        userProfile={{
+                          id: 'user-1',
+                          role: userRole || 'the-drinker',
+                          name: 'You',
+                          email: 'user@example.com',
+                          favoriteVenues: favorites || [],
+                          favoriteBartenders: favoriteBartenders || [],
+                          following: [],
+                          visitHistory: visitHistory || [],
+                          rsvpdEvents: rsvpdEvents || [],
+                          reviewsWritten: reviewsWritten || [],
+                          threadParticipation: threadParticipation || [],
+                          createdAt: new Date().toISOString()
+                        }}
+                        visitHistory={visitHistory || []}
+                        allVenues={MOCK_VENUES}
+                        onSelectVenue={setSelectedVenue}
+                      />
+                    </motion.div>
+                  </>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
