@@ -27,8 +27,10 @@ import { DirectMessageList } from '@/components/DirectMessageList';
 import { DirectMessageThread } from '@/components/DirectMessageThread';
 import { EventCreationModal } from '@/components/EventCreationModal';
 import { MenuItemEditor } from '@/components/MenuItemEditor';
+import { HappyHourSpecialCreator } from '@/components/HappyHourSpecialCreator';
+import { VenueManagementDashboard } from '@/components/VenueManagementDashboard';
 import { MagnifyingGlass, FunnelSimple, Heart, MapPin, Sparkle, CalendarBlank, Users as UsersIcon, Fire, ChatCircleDots, User, DiceFive, Briefcase, Envelope, Plus, Martini } from '@phosphor-icons/react';
-import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent, SocialThread, UserProfile, VenueVisit, Achievement, Review, DirectMessageConversation, DirectMessage, MenuItem } from '@/lib/types';
+import { Venue, FilterState, UserRole, ThemedEvent, DrinkingTheme, DailyContent, SocialThread, UserProfile, VenueVisit, Achievement, Review, DirectMessageConversation, DirectMessage, MenuItem, Deal } from '@/lib/types';
 import { MOCK_VENUES, MOCK_BARTENDERS, MOCK_EVENTS, MOCK_SOCIAL_THREADS, MOCK_CALENDAR_EVENTS } from '@/lib/mock-data';
 import { isDealActiveNow } from '@/lib/time-utils';
 import { generateDailyContent } from '@/lib/daily-content-service';
@@ -50,6 +52,7 @@ function App() {
   const [dmConversations, setDmConversations] = useKV<DirectMessageConversation[]>('dm-conversations', []);
   const [userEvents, setUserEvents] = useKV<ThemedEvent[]>('user-events', []);
   const [userMenuItems, setUserMenuItems] = useKV<MenuItem[]>('user-menu-items', []);
+  const [venueDeals, setVenueDeals] = useKV<Deal[]>('venue-deals', []);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedThread, setSelectedThread] = useState<SocialThread | null>(null);
@@ -58,6 +61,7 @@ function App() {
   const [showScheduling, setShowScheduling] = useState(false);
   const [showEventCreator, setShowEventCreator] = useState(false);
   const [showMenuEditor, setShowMenuEditor] = useState(false);
+  const [showDealCreator, setShowDealCreator] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [activeTab, setActiveTab] = useState('venues');
@@ -330,6 +334,17 @@ function App() {
       createdAt: new Date().toISOString()
     };
     setUserMenuItems((current) => [...(current || []), newItem]);
+  };
+
+  const handleCreateDeal = (deal: Omit<Deal, 'id'>) => {
+    const newDeal: Deal = {
+      ...deal,
+      id: `deal-${Date.now()}`
+    };
+    setVenueDeals((current) => [...(current || []), newDeal]);
+    toast.success('Happy hour special created!', {
+      description: 'Your special is now live and visible to customers.'
+    });
   };
 
   const allEvents = useMemo(() => {
@@ -895,6 +910,23 @@ function App() {
                     </div>
                   )}
 
+                  {userRole === 'the-venue' && (
+                    <VenueManagementDashboard
+                      venue={{
+                        ...MOCK_VENUES[0],
+                        id: 'user-venue-1',
+                        name: 'Your Venue',
+                        deals: venueDeals || []
+                      }}
+                      applications={[]}
+                      reviews={userReviews}
+                      events={userEvents}
+                      onCreateDeal={() => setShowDealCreator(true)}
+                      onCreateEvent={() => setShowEventCreator(true)}
+                      onViewApplications={() => setShowScheduling(true)}
+                    />
+                  )}
+
                   <div className="glass-card p-8 rounded-3xl">
                     <div className="flex items-center gap-3 mb-6">
                       <User weight="fill" className="w-6 h-6 text-accent" />
@@ -1099,6 +1131,13 @@ function App() {
             onOpenChange={setShowMenuEditor}
             onSubmit={handleCreateMenuItem}
             bartenderId="user-1"
+          />
+
+          <HappyHourSpecialCreator
+            open={showDealCreator}
+            onOpenChange={setShowDealCreator}
+            onSubmit={handleCreateDeal}
+            venueId="user-venue-1"
           />
         </>
       )}
