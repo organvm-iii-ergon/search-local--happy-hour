@@ -248,6 +248,37 @@ export interface BartenderSchedule {
   status: 'scheduled' | 'available' | 'unavailable';
 }
 
+export interface JobPosting {
+  id: string;
+  venueId: string;
+  venueName: string;
+  title: string;
+  description: string;
+  requirements: string[];
+  schedule: string;
+  payRange: string;
+  benefits: string[];
+  postedAt: string;
+  status: 'open' | 'filled' | 'closed';
+  applicants: number;
+}
+
+export interface JobApplication {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  venueName: string;
+  applicantId: string;
+  applicantName: string;
+  applicantAvatar: string;
+  coverLetter: string;
+  experience: string;
+  availability: string[];
+  appliedAt: string;
+  status: 'pending' | 'reviewed' | 'interviewing' | 'accepted' | 'rejected';
+  venueNotes?: string;
+}
+
 export interface VenueProfile extends UserProfile {
   venueDetails: {
     venueId: string;
@@ -283,6 +314,20 @@ export interface BartenderApplication {
   availability: BartenderSchedule[];
   appliedAt: string;
   status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  category: 'cocktail' | 'beer' | 'wine' | 'spirits' | 'mocktail' | 'food';
+  price: number;
+  ingredients?: string[];
+  drinkingTheme?: DrinkingTheme;
+  isSignature?: boolean;
+  imageUrl?: string;
+  createdBy?: string; // bartender ID
+  createdAt: string;
 }
 
 export interface DrinkingGame {

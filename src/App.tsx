@@ -1009,6 +1009,9 @@ function App() {
             userRole={userRole === 'the-drinker' ? null : userRole}
             open={showScheduling}
             onOpenChange={setShowScheduling}
+            currentUserId="user-1"
+            currentUserName="You"
+            currentUserAvatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
           />
         </>
       )}
