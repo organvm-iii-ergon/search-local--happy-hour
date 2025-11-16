@@ -603,8 +603,35 @@ function App() {
               </motion.div>
 
               <TabsContent value="venues" className="mt-0">
+                {/* Recommendations Panel */}
+                {filteredVenues.length > 0 && !filters.searchQuery && (
+                  <RecommendationsPanel
+                    allVenues={MOCK_VENUES}
+                    userProfile={{
+                      id: 'user-1',
+                      role: userRole || 'the-drinker',
+                      name: 'You',
+                      email: 'user@example.com',
+                      favoriteVenues: favorites || [],
+                      favoriteBartenders: favoriteBartenders || [],
+                      following: [],
+                      visitHistory: visitHistory || [],
+                      preferences: {
+                        priceRange: [1, 2, 3]
+                      },
+                      createdAt: new Date().toISOString()
+                    }}
+                    visitHistory={visitHistory || []}
+                    favoriteVenues={favorites || []}
+                    selectedTheme={selectedTheme}
+                    onSelectVenue={setSelectedVenue}
+                    onToggleFavorite={toggleFavorite}
+                    onCheckIn={checkInVenue}
+                  />
+                )}
+
                 <QuickStats venues={filteredVenues} />
-                
+
                 <AnimatePresence mode="wait">
                   {filteredVenues.length === 0 ? (
                     <motion.div 
