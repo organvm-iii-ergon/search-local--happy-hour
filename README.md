@@ -5,6 +5,14 @@
 
 # search-local--happy-hour
 
+[![CI](https://github.com/organvm-iii-ergon/search-local--happy-hour/actions/workflows/ci.yml/badge.svg)](https://github.com/organvm-iii-ergon/search-local--happy-hour/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-pending-lightgrey)](https://github.com/organvm-iii-ergon/search-local--happy-hour)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/organvm-iii-ergon/search-local--happy-hour/blob/main/LICENSE)
+[![Organ III](https://img.shields.io/badge/Organ-III%20Ergon-F59E0B)](https://github.com/organvm-iii-ergon)
+[![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/organvm-iii-ergon/search-local--happy-hour)
+[![TypeScript](https://img.shields.io/badge/lang-TypeScript-informational)](https://github.com/organvm-iii-ergon/search-local--happy-hour)
+
+
 **Social drink discovery and cultural exploration platform connecting bartenders, venues, and drink enthusiasts through curated happy hour experiences — enriched by five historically grounded drinking-culture themes and daily AI-generated content.**
 
 Hello Happier Hour reimagines venue discovery as a cultural act. Instead of presenting a static list of deals, the platform wraps each venue, event, and social thread in one of five drinking-culture lenses — Famous Drunks, Literary, Archetypal, Prohibition, and Ancient Rome — so that choosing where to drink on a Thursday evening becomes an encounter with Hemingway's daiquiris, Fitzgerald's jazz-age excess, or the structured conviviality of a Roman symposium. A built-in AI content service generates fresh quotes, cocktail recipes, historical stories, and surprising facts for each theme every day, keeping the experience alive and evergreen without manual editorial overhead.
