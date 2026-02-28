@@ -1358,6 +1358,8 @@ accent: 'oklch(0.75 0.16 85)'        // Yellow
 
 ---
 
+**Live URL:** https://search-local-happy-hour.netlify.app (Netlify, `main` branch auto-deploys)
+
 **Last Updated:** 2025-11-18
 **CLAUDE.md Version:** 1.0.0
 **Project Version:** 0.0.0
